@@ -29,9 +29,14 @@ public abstract class Event {
      * in which an event is less strict than the fired event.
      * </p>
      * <p>
-     *     For instance, if this event would fire for any job while
+     * For instance, if this event would fire for any job while
      * the given event is for a specific job. Then if the given event is fired, this event should fire as well. Thus
      * {@code true} should be returned for this specific example.
+     * </p>
+     * <p>
+     * This method should return {@code true} for any Event that is returned by {@link #references()}. This means that
+     * typically if {@link #references()} is overridden, this method should be too. This also holds the other way
+     * around.
      * </p>
      * @param event The event that could fire
      * @return Whether or not the given event would cause this event.
@@ -60,5 +65,23 @@ public abstract class Event {
     public boolean isStatic(){
         isStaticOverride = false;
         return isScriptedOverride && !isScripted();
+    }
+
+    /**
+     * <p>
+     * Indicates which Events are referenced by this Event. In practice this should mean that for every Event
+     * {@code event}that is returned by this method, a call on this.{@link #isFiredBy(Event)} with {@code event} as an
+     * argument should always return true. In other words, for each of the returned events: if any of them fires, this
+     * event fires as well.
+     * </p>
+     * <p>
+     * Typically if {@link #isFiredBy(Event)} is overridden, this method should be too. This also holds the other way
+     * around.
+     * </p>
+     * @return All Events that are referenced by this Event. Return {@code null} to indicate that no Events are
+     * referenced.
+     */
+    public Event[] references() {
+        return null;
     }
 }
