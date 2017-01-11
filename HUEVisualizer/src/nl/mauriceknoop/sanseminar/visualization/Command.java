@@ -7,7 +7,7 @@ package nl.mauriceknoop.sanseminar.visualization;
  * A command contains an Event and an Action. If the specified {@link Event} occurs, the specified {@link Action} should
  * be undertaken. If no {@link Event} is specified, the action should be undertaken as soon as possible possible.
  */
-public class Command {
+public class Command implements Fireable{
 
     private Action action;
 
@@ -62,5 +62,19 @@ public class Command {
         if(event == null)
             throw new IllegalArgumentException("Event must not be null.");
         this.event = event;
+    }
+
+    /**
+     * <p>
+     * Indicates whether firing of the given event should lead to this Command firing.
+     * This is to handle some scenarios in which the Event is less strict than the fired event.
+     * </p>
+     *
+     * @param event The event that could fire
+     * @return Whether or not the given event would cause this Fireable object to be fired as well.
+     */
+    @Override
+    public boolean isFiredBy(Event event) {
+        return this.getEvent().isFiredBy(event);
     }
 }

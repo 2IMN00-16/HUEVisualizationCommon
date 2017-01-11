@@ -3,7 +3,7 @@ package nl.mauriceknoop.sanseminar.visualization;
 /**
  * Created by Maurice on 11-1-2017.
  */
-public abstract class Event {
+public abstract class Event implements Fireable {
 
     /**
      * Indicates whether the {@link #isScripted()} method is overridden by a subclass.
@@ -41,6 +41,7 @@ public abstract class Event {
      * @param event The event that could fire
      * @return Whether or not the given event would cause this event.
      */
+    @Override
     public abstract boolean isFiredBy(Event event);
 
     /**
