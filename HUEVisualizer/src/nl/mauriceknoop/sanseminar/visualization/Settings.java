@@ -8,8 +8,20 @@ import java.util.List;
  */
 public class Settings {
 
+    /**
+     * All static commands that must be executed before the scripted part of the visualization is started.
+     */
     private final List<Command> preCommands = new LinkedList<>();
+
+
+    /**
+     * All scripted commands that must be executed during the scripted part of the visualization.
+     */
     private final List<Command> eventCommands = new LinkedList<>();
+
+    /**
+     * All static commands that must be executed after the scripted part of the visualization has finished.
+     */
     private final List<Command> postCommands = new LinkedList<>();
 
 }
