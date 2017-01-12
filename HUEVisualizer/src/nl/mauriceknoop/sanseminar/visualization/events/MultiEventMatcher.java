@@ -1,6 +1,7 @@
 package nl.mauriceknoop.sanseminar.visualization.events;
 
 import nl.mauriceknoop.sanseminar.visualization.Event;
+import nl.mauriceknoop.sanseminar.visualization.EventMatcher;
 
 import java.util.HashSet;
 
@@ -9,19 +10,19 @@ import java.util.HashSet;
  *
  * Event that is fired if any of its children are fired.
  */
-public final class OrEvent extends Event {
+public final class MultiEventMatcher extends EventMatcher {
 
-    private HashSet<Event> causes = new HashSet<>();
+    private HashSet<EventMatcher> causes = new HashSet<>();
 
     /**
      * Creates a new OrEvent that fires when any of the given events is fired.
-     * @param events
+     * @param eventMatchers
      */
-    public OrEvent(Event ... events){
-        if(events != null)
-            for(Event event : events)
-                if(event != null)
-                    this.causes.add(event);
+    public MultiEventMatcher(EventMatcher... eventMatchers){
+        if(eventMatchers != null)
+            for(EventMatcher eventMatcher : eventMatchers)
+                if(eventMatcher != null)
+                    this.causes.add(eventMatcher);
     }
 
 
@@ -35,9 +36,9 @@ public final class OrEvent extends Event {
      * @return Whether or not the given event would cause this event to fire.
      */
     @Override
-    public boolean isFiredBy(Event event) {
-        for(Event cause : this.causes)
-            if(cause.isFiredBy(event))
+    public boolean matches(Event event) {
+        for(EventMatcher cause : this.causes)
+            if(cause.matches(event))
                 return true;
         return false;
     }
@@ -48,7 +49,7 @@ public final class OrEvent extends Event {
      * @return All Events references by this Event. The returned array is never null. If this event has no references,
      */
     @Override
-    public Event[] references() {
-        return causes.toArray(new Event[this.causes.size()]);
+    public EventMatcher[] references() {
+        return causes.toArray(new EventMatcher[this.causes.size()]);
     }
 }

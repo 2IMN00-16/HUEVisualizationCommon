@@ -28,6 +28,6 @@ public class Settings {
     /**
      * All contained Events.
      */
-    private final HashSet<Event> events = new HashSet<>();
+    private final HashSet<EventMatcher> eventMatchers = new HashSet<>();
 
 }

@@ -4,23 +4,23 @@ package nl.mauriceknoop.sanseminar.visualization;
 /**
  * Created by Maurice on 11-1-2017.
  *
- * A command contains an Event and an Action. If the specified {@link Event} occurs, the specified {@link Action} should
- * be undertaken. If no {@link Event} is specified, the action should be undertaken as soon as possible possible.
+ * A command contains an Event and an Action. If the specified {@link EventMatcher} occurs, the specified {@link Action} should
+ * be undertaken. If no {@link EventMatcher} is specified, the action should be undertaken as soon as possible possible.
  */
-public class Command implements Fireable{
+public class Command implements IEventMatcher{
 
     private Action action;
 
-    private Event event;
+    private EventMatcher eventMatcher;
 
 
     /**
-     * Create a new Command that should lead to the execution of the given {@link Action} if the given {@link Event} is fired.
-     * @param action The {@link Action} that should be executed when the given {@link Event} is fired.
-     * @param event The {@link Event} that should lead to the execution of the given {@link Event} when it is fired.
+     * Create a new Command that should lead to the execution of the given {@link Action} if the given {@link EventMatcher} is fired.
+     * @param action The {@link Action} that should be executed when the given {@link EventMatcher} is fired.
+     * @param eventMatcher The {@link EventMatcher} that should lead to the execution of the given {@link EventMatcher} when it is fired.
      */
-    public Command(Event event,Action action) {
-        this.setEvent(event);
+    public Command(EventMatcher eventMatcher, Action action) {
+        this.setEventMatcher(eventMatcher);
         this.setAction(action);
     }
 
@@ -46,22 +46,22 @@ public class Command implements Fireable{
     }
 
     /**
-     * Get the {@link Event} that causes this Command to be fired
-     * @return The {@link Event} that is registered to fire this Command. The returned {@link Event} is never null.
+     * Get the {@link EventMatcher} that causes this Command to be fired
+     * @return The {@link EventMatcher} that is registered to fire this Command. The returned {@link EventMatcher} is never null.
      */
-    public Event getEvent() {
-        return event;
+    public EventMatcher getEventMatcher() {
+        return eventMatcher;
     }
 
     /**
-     * Get the {@link Event} that causes this Command to be fired
-     * @return The {@link Event} that is registered to fire this Command.
-     * @throws IllegalArgumentException if the given {@link Event} is null.
+     * Get the {@link EventMatcher} that causes this Command to be fired
+     * @return The {@link EventMatcher} that is registered to fire this Command.
+     * @throws IllegalArgumentException if the given {@link EventMatcher} is null.
      */
-    public void setEvent(Event event) {
-        if(event == null)
+    public void setEventMatcher(EventMatcher eventMatcher) {
+        if(eventMatcher == null)
             throw new IllegalArgumentException("Event must not be null.");
-        this.event = event;
+        this.eventMatcher = eventMatcher;
     }
 
     /**
@@ -74,7 +74,7 @@ public class Command implements Fireable{
      * @return Whether or not the given event would cause this Fireable object to be fired as well.
      */
     @Override
-    public boolean isFiredBy(Event event) {
-        return this.getEvent().isFiredBy(event);
+    public boolean matches(Event event) {
+        return this.getEventMatcher().matches(event);
     }
 }
