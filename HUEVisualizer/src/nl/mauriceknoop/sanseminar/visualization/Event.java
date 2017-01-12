@@ -164,20 +164,15 @@ public abstract class Event implements Fireable {
 
         /**
          * Indicate that the given identifier must be accepted.
-         * @param identifier The identifier to accept. The translation of this identifier lie in the range {@code [0,d)}, where {@code d}
-         *             is equal to the number of distinct translations the translator could provide at the creation of
-         *             this Mask.
+         * @param identifier The identifier to accept. The identifier should lie in the range that is specified when
+         *                   this Mask was created.
          */
         public void accept(int identifier){
             this.set(identifier, true);
         }
         /**
          * Set the given acceptance value for the given identifier
-         * @param identifier The identifier for which to change the acceptance. The translation of this identifier lie in the range
-         *             {@code [0,d)}, where {@code d} is equal to the number of distinct translations the translator
-         *             could provide at the creation of this Mask. Note that if this identifier has the same translation as
-         *             another identifier that can be translated by the internal Translator, then calling this method will
-         *             influence the behavior on both items.
+         * @param identifier The identifier for which to change the acceptance.
          * @param accepts Whether or not the given identifier is accepted.
          */
         public void set(int identifier, boolean accepts){
@@ -186,25 +181,24 @@ public abstract class Event implements Fireable {
         }
 
         /**
-         * Indicates whether the given identifier lies in the range {@code [0,d)}, where {@code d} is equal to the
-         * number of distinct translations the translator could provide at the creation of this Mask.
-         * @param identifier Any integer number that is the result of calling {@link Translator#translate(Object)}.
-         * @return Whether the given identifier is within bounds.
+         * Indicates whether the given identifier lies in the range that was specified at the creation of this Mask.
+         * @param identifier An identifier.
+         * @return Whether the given identifier is within bounds the specified bounds.
          */
         private boolean isInBounds(int identifier){
             return identifier >= min || identifier <= max;
         }
 
         /**
-         * Validates that the given translation of an item is in the range as specified by {@link #isInBounds(int)}. If
+         * Validates that the given identifier is in the range as specified by {@link #isInBounds(int)}. If
          * this is the case the method terminates normally. Otherwise an IllegalArgumentException is thrown, indicating
-         * that the given translation is not within the specified range.
-         * @param translation The translation of the item to validate.
-         * @throws IllegalArgumentException If the translation does not lie within the defined range.
+         * that the given identifier is not within the specified range.
+         * @param identifier The identifier of the item to validate.
+         * @throws IllegalArgumentException If the identifier does not lie within the defined range.
          */
-        private void validateItem(int translation){
-            if(!isInBounds(translation))
-                throw new IllegalArgumentException("translation must lie in the range ["+this.min+","+this.max+"].");
+        private void validateItem(int identifier){
+            if(!isInBounds(identifier))
+                throw new IllegalArgumentException("identifier must lie in the range ["+this.min+","+this.max+"].");
         }
 
     }
