@@ -90,13 +90,44 @@ public abstract class Event implements Fireable {
 
     /**
      * Creates a mask that can be used to indicate that an Event accepts specific instances, based on the translation
-     * made by the given translator.
+     * made by the given translator. Allows for immediately setting accepted identifiers.
+     *
      * @param min The lowest value for identifiers, inclusive. May be negative.
      * @param max The highest value for identifiers, inclusive. Must not be smaller than the minimum.
-     * @return The created mask.
+     * @param identifiers The identifiers that the mask should accept. May be empty, but may not be null. All contained
+     *                    identifiers are expected to lie in the range {@code [min, max]}.
+     * @return The created mask, which accepts only the given identifiers.
      */
-    protected static Mask createMask(int min, int max){
-        return new Mask(min, max);
+    protected static Mask createMask(int min, int max, int...identifiers){
+        Mask mask = new Mask(min, max);
+        for (int identifier : identifiers)
+            mask.accept(identifier);
+        return mask;
+    }
+
+    /**
+     * Creates a mask that accepts only the given identifiers. The minimal and maximal value are extracted from the
+     * given identifiers. Mind that as a result you can never accept an identifier that is larger than the largest value
+     * in the given array of identifiers, nor can you add an identifier that is smaller than the smallest.
+     * @param identifiers THe identifiers for which to create a mask.
+     * @return The created mask, which accepts only the given identifiers.
+     */
+    protected static Mask createMaskFor(int...identifiers){
+
+        if(identifiers.length <= 0)
+            throw new IllegalArgumentException("Expected at least one identifier");
+
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+
+        // Find the min and max from the given
+        for (int identifier : identifiers) {
+            min = Math.min(min, identifier);
+            max = Math.max(min, identifier);
+        }
+
+        return createMask(min, max, identifiers);
+
     }
 
     /**
