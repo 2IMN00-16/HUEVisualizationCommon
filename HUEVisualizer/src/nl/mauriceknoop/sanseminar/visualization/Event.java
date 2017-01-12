@@ -91,19 +91,18 @@ public abstract class Event implements Fireable {
     /**
      * Creates a mask that can be used to indicate that an Event accepts specific instances, based on the translation
      * made by the given translator.
-     * @param translator The Translator with which a mask must be created.
+     * @param min The lowest value for identifiers, inclusive. May be negative.
+     * @param max The highest value for identifiers, inclusive. Must not be smaller than the minimum.
      * @return The created mask.
      */
-    protected static <T> Mask<T> createMask(Translator<T> translator){
-        return new Mask<>(translator);
+    protected static Mask createMask(int min, int max){
+        return new Mask(min, max);
     }
 
     /**
-     * Mask class that can be used to indicate that specific items of type {@code T} are accepted. This uses a
-     * {@link Translator} to define whether an item is accepted.
-     * @param <T> The type of the items that this mask may accept.
+     * Mask class that can be used to indicate that items with a certain identifier are accepted. 
      */
-    protected static final class Mask<T> {
+    protected static final class Mask {
 
         /**
          * Internal representation of the mask.
@@ -111,13 +110,27 @@ public abstract class Event implements Fireable {
         private final BitSet bitSet;
 
         /**
-         * Translator that allows us to go from any item to an integer value
+         * The lowest value for identifiers, inclusive.
          */
-        private final Translator<T> translator;
+        private final int min;
 
-        private Mask(Translator<T> translator) {
-            this.translator = translator;
-            this.bitSet = new BitSet(translator.distinctTranslations());
+        /**
+         * The highest value for identifiers, inclusive.
+         */
+        private final int max;
+
+        /**
+         * Create a new mask that accepts identifiers whose value lies between the given minimum and maximum, both
+         * inclusive.
+         * @param min The lowest value for identifiers, inclusive. May be negative.
+         * @param max The highest value for identifiers, inclusive. Must not be smaller than the minimum.
+         */
+        private Mask(int min, int max) {
+            if(max < min)
+                throw new IllegalArgumentException("The maximum must not be smaller than the minimum.");
+            this.min = min;
+            this.max = max;
+            this.bitSet = new BitSet(1 + this.max - this.min);
         }
 
         /**
@@ -125,8 +138,8 @@ public abstract class Event implements Fireable {
          * the given item or if this mask accepts any item. If two items have the same translation then beware that this
          * method may produce unexpected results because it can't distinguish between the two.
          *
-         * @param item The item for which to find acceptance. This method does not perform validation on the item as is
-         *             the case for other methods.
+         * @param identifier The identifier for which to find acceptance. This method does not perform validation on the
+         *                   identifier. If the given identifier is not within bounds, false is returned.
          * @return Whether or not the given task is accepted by this TaskEvent. We define a distinction on three
          * situations:
          * <ul>
@@ -136,51 +149,50 @@ public abstract class Event implements Fireable {
          * </ul>
          * @see #isInBounds(int)
          */
-        public boolean accepts(T item) {
-            if(!this.translator.canTranslate(item))
-                return false;
-            else {
-                int translation = this.translator.translate(item);
-                return this.isInBounds(translation) && this.bitSet.get(translation);
-            }
+        public boolean accepts(int identifier) {
+            return this.isInBounds(identifier) && this.isInBounds(identifier) && this.bitSet.get(indexOf(identifier));
         }
 
+        /**
+         * Computes the bit index for the given identifier. The input is not validated.
+         * @param identifier The identifier for which to get the BitSet index
+         * @return The computed BitSet index.
+         */
+        private int indexOf(int identifier){
+            return identifier - min;
+        }
 
         /**
-         * Indicate that the given item must be accepted.
-         * @param item The item to accept. The translation of this item lie in the range {@code [0,d)}, where {@code d}
+         * Indicate that the given identifier must be accepted.
+         * @param identifier The identifier to accept. The translation of this identifier lie in the range {@code [0,d)}, where {@code d}
          *             is equal to the number of distinct translations the translator could provide at the creation of
          *             this Mask.
          */
-        public void accept(T item){
-            this.set(item, true);
+        public void accept(int identifier){
+            this.set(identifier, true);
         }
         /**
-         * Set the given acceptance value for the given item
-         * @param item The item for which to change the acceptance. The translation of this item lie in the range
+         * Set the given acceptance value for the given identifier
+         * @param identifier The identifier for which to change the acceptance. The translation of this identifier lie in the range
          *             {@code [0,d)}, where {@code d} is equal to the number of distinct translations the translator
-         *             could provide at the creation of this Mask. Note that if this item has the same translation as
-         *             another item that can be translated by the internal Translator, then calling this method will
+         *             could provide at the creation of this Mask. Note that if this identifier has the same translation as
+         *             another identifier that can be translated by the internal Translator, then calling this method will
          *             influence the behavior on both items.
-         * @param accepts Whether or not the given item is accepted.
+         * @param accepts Whether or not the given identifier is accepted.
          */
-        public void set(T item, boolean accepts){
-            if(!this.translator.canTranslate(item))
-                throw new IllegalArgumentException("The Translator can't translate the given item");
-
-            int translation = this.translator.translate(item);
-            validateItem(translation);
-            this.bitSet.set(translation, accepts);
+        public void set(int identifier, boolean accepts){
+            validateItem(identifier);
+            this.bitSet.set(indexOf(identifier), accepts);
         }
 
         /**
-         * Indicates whether the given translation lies in the range {@code [0,d)}, where {@code d} is equal to the
+         * Indicates whether the given identifier lies in the range {@code [0,d)}, where {@code d} is equal to the
          * number of distinct translations the translator could provide at the creation of this Mask.
-         * @param translation Any integer number that is the result of calling {@link Translator#translate(Object)}.
-         * @return Whether the given translation is within bounds.
+         * @param identifier Any integer number that is the result of calling {@link Translator#translate(Object)}.
+         * @return Whether the given identifier is within bounds.
          */
-        private boolean isInBounds(int translation){
-            return translation >= 0 || translation < this.bitSet.size();
+        private boolean isInBounds(int identifier){
+            return identifier >= min || identifier <= max;
         }
 
         /**
@@ -192,7 +204,7 @@ public abstract class Event implements Fireable {
          */
         private void validateItem(int translation){
             if(!isInBounds(translation))
-                throw new IllegalArgumentException("translation must lie in the range [0,"+this.bitSet.size()+").");
+                throw new IllegalArgumentException("translation must lie in the range ["+this.min+","+this.max+"].");
         }
 
     }
